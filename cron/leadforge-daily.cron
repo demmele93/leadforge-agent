@@ -1,0 +1,7 @@
+{
+  "name": "LeadForge Daily Enrichment",
+  "schedule": "0 6 * * *",
+  "prompt": "Run the LeadForge daily enrichment pipeline from the leadforge profile:\n1. `python3 scripts/daily_enrich.py` — discover named businesses in the configured geography/verticals (targeted public searches for new openings, outage complaints, expansions), append S1 leads as one row per contact, regenerate the Excel workbook.\n2. `python3 scripts/name_harvest.py` — for contacts missing a verified name, render official sites (browser if available) to capture real owner/GM names and personal cell ONLY if explicitly published (multi-source logged). NEVER guess.\n3. `python3 scripts/build_xlsx.py` — regenerate LeadForge_Leads.xlsx.\n4. `python3 scripts/report.py` — print the daily report.\nOn Sundays, run `python3 scripts/report.py --weekly` to surface the weekly 'modify targeting?' prompt.\nRespect references/RESEARCH-CONTRACT.md: no fabricated contacts, personal-cell only when published, opt-out honored, public sources only. Do NOT send outreach unless config.outreach.enabled is true AND the user authorized it. Report final counts only.",
+  "workdir": "/Users/dillonemmele/.hermes/profiles/leadforge",
+  "deliver": "local"
+}
