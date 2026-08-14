@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeadForge</title>
+<style>
+  :root { --primary:#1f6feb; --accent:#0b3d91; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+         background:#f6f8fa; color:#1a1a1a; font-size:13px; }
+  header { background:var(--primary); color:#fff; padding:14px 20px; display:flex; align-items:center; gap:14px; }
+  header img { height:34px; }
+  header h1 { font-size:18px; margin:0; font-weight:700; }
+  header .meta { margin-left:auto; font-size:12px; opacity:.9; }
+  .toolbar { padding:10px 20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:#fff; border-bottom:1px solid #e1e4e8; }
+  input,select { padding:6px 9px; border:1px solid #d0d7de; border-radius:6px; font-size:13px; }
+  .grid-wrap { padding:14px 20px; overflow:auto; }
+  table { border-collapse:collapse; width:100%; background:#fff; border:1px solid #e1e4e8; border-radius:8px; overflow:hidden; }
+  th { background:var(--accent); color:#fff; text-align:left; padding:9px 10px; position:sticky; top:0; cursor:pointer; font-size:12px; }
+  td { padding:8px 10px; border-bottom:1px solid #eef1f4; }
+  tr.row:hover { background:#f0f6ff; cursor:pointer; }
+  .biz { font-weight:600; }
+  .stage { padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+  .s-s1 { background:#fff2cc; color:#7a5b00; } .s-s2 { background:#fce5cd; color:#8a4b00; }
+  .s-s3 { background:#d9ead3; color:#2e5e1e; } .s-s4 { background:#b6d7a8; color:#1e4d12; }
+  .pill { background:#eef1f4; padding:2px 8px; border-radius:10px; font-size:11px; }
+  .na { color:#aaa; }
+  .contacts { background:#fafbfc; }
+  .contacts td { font-size:12px; }
+  .src { color:var(--primary); text-decoration:none; }
+  .stat { display:inline-block; background:#fff; border:1px solid #e1e4e8; border-radius:8px; padding:8px 14px; margin:6px 8px 6px 0; }
+  .stat b { color:var(--accent); font-size:16px; }
+</style>
+</head>
+<body>
+<header>
+  <img id="logo" style="display:none">
+  <h1 id="brandName">LeadForge</h1>
+  <div class="meta" id="meta">loading…</div>
+</header>
+<div class="toolbar">
+  <input id="search" placeholder="search business, contact, town…" oninput="apply()">
+  <select id="stageFilter" onchange="apply()">
+    <option value="">All stages</option>
+    <option value="s1">S1 Identified</option>
+    <option value="s2">S2 Contact</option>
+    <option value="s3">S3 Qualified</option>
+    <option value="s4">S4 Hot</option>
+  </select>
+  <div id="stats"></div>
+</div>
+<div class="grid-wrap">
+  <table id="grid">
+    <thead><tr>
+      <th onclick="sort('business')">Business</th>
+      <th onclick="sort('vertical')">Vertical</th>
+      <th onclick="sort('town')">Town</th>
+      <th onclick="sort('state')">State</th>
+      <th onclick="sort('main')">Main Contact</th>
+      <th>Business Phone</th>
+      <th>Main Email</th>
+      <th>Personal Cell</th>
+      <th onclick="sort('pain')">Pain</th>
+      <th onclick="sort('stage')">Stage</th>
+      <th onclick="sort('score')">Score</th>
+      <th># Contacts</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+<script>
+let DATA=[], brand={}, sortKey='business', sortDir=1;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sCls=v=>({s1:'s-s1',s2:'s-s2',s3:'s-s3',s4:'s-s4'}[v]||'s-s1');
+const stLab=v=>({s1:'S1 Identified',s2:'S2 Contact',s3:'S3 Qualified',s4:'S4 Hot'}[v]||v);
+
+function load(){
+  fetch('/api/leads').then(r=>r.json()).then(d=>{
+    DATA=d.leads; brand=d.brand||{};
+    document.documentElement.style.setProperty('--primary',brand.color_primary||'#1f6feb');
+    document.documentElement.style.setProperty('--accent',brand.color_accent||'#0b3d91');
+    document.getElementById('brandName').textContent=brand.name||'LeadForge';
+    if(brand.logo_url){const i=document.getElementById('logo'); i.src=brand.logo_url; i.style.display='block';}
+    document.getElementById('meta').textContent='generated '+new Date(d.generated).toLocaleString();
+    renderStats(); apply();
+  });
+}
+function renderStats(){
+  const t=DATA.length;
+  const named=DATA.filter(b=>b.main.name&&b.main.name!=='—').length;
+  const cell=DATA.filter(b=>b.main.cell&&b.main.cell!=='—').length;
+  const hot=DATA.filter(b=>b.stage==='s4').length;
+  document.getElementById('stats').innerHTML=
+    `<span class="stat">Businesses <b>${t}</b></span>`+
+    `<span class="stat">Named <b>${named}</b></span>`+
+    `<span class="stat">Cell <b>${cell}</b></span>`+
+    `<span class="stat">Hot <b>${hot}</b></span>`;
+}
+function sort(k){ if(sortKey===k) sortDir*=-1; else {sortKey=k;sortDir=1;} apply(); }
+function apply(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const sf=document.getElementById('stageFilter').value;
+  let rows=DATA.filter(b=>
+    (!q || (b.business+' '+b.main.name+' '+b.town+' '+b.state).toLowerCase().includes(q)) &&
+    (!sf || b.stage===sf));
+  rows.sort((a,b)=>{ let x=a[sortKey], y=b[sortKey];
+    if(sortKey==='main'){x=a.main.name;y=b.main.name;}
+    x=String(x).toLowerCase(); y=String(y).toLowerCase();
+    return (x<y?-1:x>y?1:0)*sortDir; });
+  const tb=document.getElementById('rows'); tb.innerHTML='';
+  rows.forEach(b=>{
+    const tr=document.createElement('tr'); tr.className='row';
+    tr.innerHTML=`<td class="biz">${esc(b.business)}</td>`+
+      `<td>${esc(b.vertical)||'—'}</td>`+
+      `<td>${esc(b.town)||'—'}</td>`+
+      `<td>${esc(b.state)||'—'}</td>`+
+      `<td>${esc(b.main.name)}<br><span class="pill">${esc(b.main.title||'')}</span></td>`+
+      `<td>${b.main.phone&&b.main.phone!=='—'?`<a href="tel:${esc(b.main.phone)}">${esc(b.main.phone)}</a>`:'<span class="na">—</span>'}</td>`+
+      `<td>${b.main.email&&b.main.email!=='—'?`<a class="src" href="mailto:${esc(b.main.email)}">${esc(b.main.email)}</a>`:'<span class="na">—</span>'}</td>`+
+      `<td>${b.main.cell&&b.main.cell!=='—'?`<a href="tel:${esc(b.main.cell)}">${esc(b.main.cell)}</a>`:'<span class="na">—</span>'}</td>`+
+      `<td>${esc(b.pain)}</td>`+
+      `<td><span class="stage ${sCls(b.stage)}">${stLab(b.stage)}</span></td>`+
+      `<td>${b.score}</td>`+
+      `<td>${b.contacts.length}</td>`;
+    tr.onclick=()=>toggleContacts(b.id);
+    tb.appendChild(tr);
+    if(window._open && window._open===b.id){
+      const cr=document.createElement('tr'); cr.className='contacts';
+      const ct=b.contacts.map(c=>`<tr><td></td><td colspan="11"><b>${esc(c.role)}</b> — ${esc(c.name)} ${esc(c.title?'· '+c.title:'')} · ☎ ${esc(c.phone)} ${c.cell&&c.cell!=='—'?'· 📱 '+esc(c.cell):''} · ✉ ${esc(c.email)} <span class="pill">${esc(c.conf||'')}</span></td></tr>`).join('');
+      cr.innerHTML=`<td colspan="12"><table style="width:100%">${ct}</table></td>`;
+      tb.appendChild(cr);
+    }
+  });
+}
+function toggleContacts(id){ window._open = window._open===id?null:id; apply(); }
+load();
+</script>
+</body>
+</html>
