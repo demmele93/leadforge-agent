@@ -1,0 +1,30 @@
+{
+  "brand": {
+    "name": "Your Brand",
+    "color_primary": "#1f6feb",
+    "color_accent": "#0b3d91",
+    "logo_url": "",
+    "website": ""
+  },
+  "targeting": {
+    "geography": ["WV", "VA", "KY", "TN", "NC", "OH", "GA"],
+    "verticals": ["any"],
+    "pain_signals": ["outage", "now open", "expansion", "hiring", "moving"],
+    "daily_target": 40
+  },
+  "enrichment": {
+    "hunt_personal_cell": true,
+    "cross_check_sources": true,
+    "auto_deep_enrich_superhot": true
+  },
+  "reporting": {
+    "daily_report": true,
+    "weekly_modify_prompt": true
+  },
+  "outreach": {
+    "enabled": false,
+    "plan": "free",
+    "daily_cap": 0,
+    "require_user_auth": true
+  }
+}
