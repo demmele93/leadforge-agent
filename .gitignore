@@ -1,0 +1,22 @@
+
+
+# Never commit live leads, contact exports, reports, credentials, or local state.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.db
+data/
+exports/
+output/
+reports/
+logs/
+leads/
+*.csv
+*.xlsx
+*.xls

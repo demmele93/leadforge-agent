@@ -11,7 +11,7 @@ the skill prompt so the agent enforces them even when autonomous.
 ## 2. No fabricated contacts (hard rule)
 - NEVER invent an email, phone, or name.
 - An email is "verified" only if it appears on the business's own site, a directory, or a
-  public record. Guessed patterns (`first.last@domain.com`) are FORBIDDEN.
+  public record. Guessed patterns (`name@example.com`) are FORBIDDEN.
 - A phone is "verified" only if published on a public source.
 - A name is "verified" only if it appears on an official/about/press source.
 
